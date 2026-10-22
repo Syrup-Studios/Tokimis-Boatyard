@@ -4,6 +4,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+//? if >=1.21.1 {
+/*import net.minecraft.server.level.ServerEntity;
+*///? }
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -31,11 +34,19 @@ public class UpgradedBoatPart extends Entity {
         this.blocksBuilding = true;
     }
 
+    //? if >=1.21.1 {
+    /*@Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(INDEX, 0);
+        builder.define(OFFSET_Z, 0f);
+    }
+    *///? } else {
     @Override
     protected void defineSynchedData() {
         this.entityData.define(INDEX, 0);
         this.entityData.define(OFFSET_Z, 0f);
     }
+    //? }
 
     public int getIndex() { return entityData.get(INDEX); }
     public void setIndex(int i) { entityData.set(INDEX, i); }
@@ -133,8 +144,15 @@ public class UpgradedBoatPart extends Entity {
         nbt.putFloat("OffsetZ", getOffsetZ());
     }
 
+    //? if >=1.21.1 {
+    /*@Override
+    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity serverEntity) {
+        return new ClientboundAddEntityPacket(this, serverEntity);
+    }
+    *///? } else {
     @Override
     public Packet<ClientGamePacketListener> getAddEntityPacket() {
         return new ClientboundAddEntityPacket(this);
     }
+        //? }
 }

@@ -6,10 +6,15 @@ import net.cozystudios.tokimiboatyard.TokimiBoatyard;
 import net.cozystudios.tokimiboatyard.data.BoatWood;
 import net.cozystudios.tokimiboatyard.data.BoatWoodRegistry;
 import net.cozystudios.tokimiboatyard.entity.BoatTier;
+import net.cozystudios.tokimiboatyard.util.ModIds;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+//? if >=1.21.1 {
+/*import net.minecraft.server.packs.PackLocationInfo;
+*///? }
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
 import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.server.packs.resources.IoSupplier;
@@ -21,10 +26,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+//? if >=1.21.1 {
+/*import java.util.Optional;
+*///? }
 import java.util.Set;
 
 public class DynamicResourcePack implements PackResources {
     public static final String NAME = "tokimiboatyard_dynamic";
+    //? if >=1.21.1 {
+    /*private static final int PACK_FORMAT = 34;
+    *///? } else {
+    private static final int PACK_FORMAT = 15;
+    //? }
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private static final String ITEM_MODEL_PREFIX = "models/item/";
@@ -61,7 +74,7 @@ public class DynamicResourcePack implements PackResources {
                 );
 
                 if (!wood.isRaft()) {
-                    ResourceLocation modelId = new ResourceLocation(TokimiBoatyard.MOD_ID, ITEM_MODEL_PREFIX + itemPath + ".json");
+                    ResourceLocation modelId = ModIds.of(TokimiBoatyard.MOD_ID, ITEM_MODEL_PREFIX + itemPath + ".json");
                     byte[] modelBytes = buildItemModel(wood.itemIconLayer(), tier, wood.overlayShape()).getBytes(StandardCharsets.UTF_8);
                     files.put(modelId, modelBytes);
                 }
@@ -69,7 +82,7 @@ public class DynamicResourcePack implements PackResources {
         }
 
         byte[] langBytes = GSON.toJson(langEntries).getBytes(StandardCharsets.UTF_8);
-        files.put(new ResourceLocation(TokimiBoatyard.MOD_ID, LANG_PATH), langBytes);
+        files.put(ModIds.of(TokimiBoatyard.MOD_ID, LANG_PATH), langBytes);
         return files;
     }
 
@@ -89,7 +102,7 @@ public class DynamicResourcePack implements PackResources {
     @Override
     public @Nullable IoSupplier<InputStream> getRootResource(String... segments) {
         if (segments.length == 1 && segments[0].equals("pack.mcmeta")) {
-            String json = "{\"pack\":{\"pack_format\":15,\"description\":\"Tokimi's Boatyard dynamic resources\"}}";
+            String json = "{\"pack\":{\"pack_format\":" + PACK_FORMAT + ",\"description\":\"Tokimi's Boatyard dynamic resources\"}}";
             return () -> new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
         }
         return null;
@@ -125,7 +138,11 @@ public class DynamicResourcePack implements PackResources {
     public @Nullable <T> T getMetadataSection(MetadataSectionSerializer<T> metaReader) {
         if (metaReader.getMetadataSectionName().equals("pack")) {
             @SuppressWarnings("unchecked")
-            T meta = (T) new PackMetadataSection(Component.literal("Tokimi's Boatyard dynamic"), 15);
+            //? if >=1.21.1 {
+            /*T meta = (T) new PackMetadataSection(Component.literal("Tokimi's Boatyard dynamic"), PACK_FORMAT, Optional.empty());
+            *///? } else {
+            T meta = (T) new PackMetadataSection(Component.literal("Tokimi's Boatyard dynamic"), PACK_FORMAT);
+            //? }
             return meta;
         }
         return null;
@@ -135,6 +152,13 @@ public class DynamicResourcePack implements PackResources {
     public String packId() {
         return NAME;
     }
+
+    //? if >=1.21.1 {
+    /*@Override
+    public PackLocationInfo location() {
+        return new PackLocationInfo(NAME, Component.literal("Tokimi's Boatyard Dynamic"), PackSource.BUILT_IN, Optional.empty());
+    }
+    *///? }
 
     @Override
     public void close() {

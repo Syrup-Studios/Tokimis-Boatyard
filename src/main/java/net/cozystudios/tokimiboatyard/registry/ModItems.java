@@ -1,5 +1,6 @@
 package net.cozystudios.tokimiboatyard.registry;
 
+import net.cozystudios.tokimiboatyard.util.ModIds;
 import net.cozystudios.tokimiboatyard.TokimiBoatyard;
 import net.cozystudios.tokimiboatyard.data.BoatWood;
 import net.cozystudios.tokimiboatyard.data.BoatWoodRegistry;
@@ -25,7 +26,7 @@ public final class ModItems {
                 Item.Properties settings = new Item.Properties().stacksTo(1);
                 if (tier.fireproof()) settings.fireResistant();
                 UpgradedBoatItem item = new UpgradedBoatItem(tier, wood.id(), settings);
-                ResourceLocation id = new ResourceLocation(TokimiBoatyard.MOD_ID, itemId(tier, wood));
+                ResourceLocation id = ModIds.of(TokimiBoatyard.MOD_ID, itemId(tier, wood));
                 Registry.register(BuiltInRegistries.ITEM, id, item);
                 byWood.put(wood.id(), item);
             }

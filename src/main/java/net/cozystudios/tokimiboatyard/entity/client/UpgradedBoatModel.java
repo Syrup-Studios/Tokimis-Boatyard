@@ -85,6 +85,21 @@ public class UpgradedBoatModel extends EntityModel<Entity> implements WaterPatch
     }
 
     @Override
+    //? if >=1.21 {
+    /*public void renderToBuffer(PoseStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
+        this.bottom.render(matrices, vertices, light, overlay, color);
+        this.back.render(matrices, vertices, light, overlay, color);
+        this.front.render(matrices, vertices, light, overlay, color);
+        this.left.render(matrices, vertices, light, overlay, color);
+        this.right.render(matrices, vertices, light, overlay, color);
+        this.leftPaddle.render(matrices, vertices, light, overlay, color);
+        this.rightPaddle.render(matrices, vertices, light, overlay, color);
+        this.chestBottom.render(matrices, vertices, light, overlay, color);
+        this.chestLid.render(matrices, vertices, light, overlay, color);
+        this.chestLock.render(matrices, vertices, light, overlay, color);
+    }
+    *///?} else {
+
     public void renderToBuffer(PoseStack matrices, VertexConsumer vertices,
                        int light, int overlay, float red, float green, float blue, float alpha) {
         this.bottom.render(matrices, vertices, light, overlay, red, green, blue, alpha);
@@ -98,6 +113,7 @@ public class UpgradedBoatModel extends EntityModel<Entity> implements WaterPatch
         this.chestLid.render(matrices, vertices, light, overlay, red, green, blue, alpha);
         this.chestLock.render(matrices, vertices, light, overlay, red, green, blue, alpha);
     }
+    //?}
 
     @Override
     public ModelPart waterPatch() {

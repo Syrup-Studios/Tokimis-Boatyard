@@ -1,5 +1,6 @@
 package net.cozystudios.tokimiboatyard.registry;
 
+import net.cozystudios.tokimiboatyard.util.ModIds;
 import net.cozystudios.tokimiboatyard.TokimiBoatyard;
 import net.cozystudios.tokimiboatyard.entity.UpgradedBoatEntity;
 import net.cozystudios.tokimiboatyard.entity.UpgradedBoatPart;
@@ -14,7 +15,7 @@ import net.minecraft.world.entity.MobCategory;
 public final class ModEntities {
     public static final EntityType<UpgradedBoatEntity> UPGRADED_BOAT = Registry.register(
         BuiltInRegistries.ENTITY_TYPE,
-        new ResourceLocation(TokimiBoatyard.MOD_ID, "upgraded_boat"),
+        ModIds.of(TokimiBoatyard.MOD_ID, "upgraded_boat"),
         FabricEntityTypeBuilder.<UpgradedBoatEntity>create(MobCategory.MISC, UpgradedBoatEntity::new)
             .dimensions(EntityDimensions.fixed(1.375F, 0.5625F))
             .trackRangeChunks(10)
@@ -25,7 +26,7 @@ public final class ModEntities {
 
     public static final EntityType<UpgradedBoatPart> UPGRADED_BOAT_PART = Registry.register(
         BuiltInRegistries.ENTITY_TYPE,
-        new ResourceLocation(TokimiBoatyard.MOD_ID, "upgraded_boat_part"),
+        ModIds.of(TokimiBoatyard.MOD_ID, "upgraded_boat_part"),
         FabricEntityTypeBuilder.<UpgradedBoatPart>create(MobCategory.MISC, UpgradedBoatPart::new)
             .dimensions(EntityDimensions.fixed(1.0F, 0.5625F))
             .trackRangeChunks(10)

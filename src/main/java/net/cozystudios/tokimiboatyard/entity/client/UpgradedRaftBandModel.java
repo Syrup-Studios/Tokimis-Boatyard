@@ -33,9 +33,17 @@ public class UpgradedRaftBandModel {
         return LayerDefinition.create(data, 16, 16);
     }
 
+    //? if >=1.21 {
+    /*public void render(PoseStack matrices, VertexConsumer vc, int light, int overlay, int color) {
+        this.leftBand.render(matrices, vc, light, overlay, color);
+        this.rightBand.render(matrices, vc, light, overlay, color);
+    }
+    *///?} else {
+
     public void render(PoseStack matrices, VertexConsumer vc, int light, int overlay,
                        float red, float green, float blue, float alpha) {
         this.leftBand.render(matrices, vc, light, overlay, red, green, blue, alpha);
         this.rightBand.render(matrices, vc, light, overlay, red, green, blue, alpha);
     }
+    //?}
 }

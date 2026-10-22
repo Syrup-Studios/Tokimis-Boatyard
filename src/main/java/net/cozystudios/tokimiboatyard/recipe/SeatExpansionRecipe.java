@@ -3,9 +3,14 @@ package net.cozystudios.tokimiboatyard.recipe;
 import net.cozystudios.tokimiboatyard.entity.UpgradedBoatEntity;
 import net.cozystudios.tokimiboatyard.item.UpgradedBoatItem;
 import net.cozystudios.tokimiboatyard.registry.ModRecipes;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
+//? if >=1.21.1 {
+/*import net.minecraft.core.HolderLookup;
+import net.minecraft.world.item.crafting.CraftingInput;
+*///? } else {
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.inventory.CraftingContainer;
+//? }
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
@@ -14,17 +19,39 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 
 public class SeatExpansionRecipe extends CustomRecipe {
 
-    public SeatExpansionRecipe(ResourceLocation id, CraftingBookCategory category) {
+    public SeatExpansionRecipe(
+//? if >=1.21.1 {
+        /*CraftingBookCategory category) {
+        super(category);
+*///? } else {
+        ResourceLocation id, CraftingBookCategory category) {
         super(id, category);
+//? }
+    }
+
+    private static int inputSize(
+//? if >=1.21.1 {
+        /*CraftingInput input) {
+        return input.size();
+*///? } else {
+        CraftingContainer input) {
+        return input.getContainerSize();
+//? }
     }
 
     @Override
-    public boolean matches(CraftingContainer inv, net.minecraft.world.level.Level world) {
+    public boolean matches(
+//? if >=1.21.1 {
+        /*CraftingInput inv,
+*///? } else {
+        CraftingContainer inv,
+//? }
+        net.minecraft.world.level.Level world) {
         ItemStack boatStack = null;
         int boatCount = 0;
         int saddleCount = 0;
 
-        for (int i = 0; i < inv.getContainerSize(); i++) {
+        for (int i = 0; i < inputSize(inv); i++) {
             ItemStack stack = inv.getItem(i);
             if (stack.isEmpty()) continue;
             if (stack.getItem() instanceof UpgradedBoatItem) {
@@ -45,10 +72,20 @@ public class SeatExpansionRecipe extends CustomRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingContainer inv, RegistryAccess registries) {
+    public ItemStack assemble(
+//? if >=1.21.1 {
+        /*CraftingInput inv,
+*///? } else {
+        CraftingContainer inv,
+//? }
+//? if >=1.21.1 {
+        /*HolderLookup.Provider registries) {
+*///? } else {
+        RegistryAccess registries) {
+//? }
         ItemStack boatStack = null;
         int saddleCount = 0;
-        for (int i = 0; i < inv.getContainerSize(); i++) {
+        for (int i = 0; i < inputSize(inv); i++) {
             ItemStack stack = inv.getItem(i);
             if (stack.isEmpty()) continue;
             if (stack.getItem() instanceof UpgradedBoatItem) boatStack = stack;
@@ -60,7 +97,7 @@ public class SeatExpansionRecipe extends CustomRecipe {
         output.setCount(1);
         int currentExtras = UpgradedBoatItem.readExtraSeats(boatStack);
         int newExtras = Math.min(UpgradedBoatEntity.MAX_EXTRA_SEATS, currentExtras + saddleCount);
-        output.getOrCreateTag().putInt("ExtraSeats", newExtras);
+        UpgradedBoatItem.writeExtraSeats(output, newExtras);
         return output;
     }
 

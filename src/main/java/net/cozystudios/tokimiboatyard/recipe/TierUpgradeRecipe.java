@@ -7,10 +7,15 @@ import net.cozystudios.tokimiboatyard.entity.BoatTier;
 import net.cozystudios.tokimiboatyard.item.UpgradedBoatItem;
 import net.cozystudios.tokimiboatyard.registry.ModItems;
 import net.cozystudios.tokimiboatyard.registry.ModRecipes;
+//? if >=1.21.1 {
+/*import net.minecraft.core.HolderLookup;
+import net.minecraft.world.item.crafting.CraftingInput;
+*///? } else {
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
+//? }
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -21,8 +26,14 @@ import org.jetbrains.annotations.Nullable;
 
 public class TierUpgradeRecipe extends CustomRecipe {
 
-    public TierUpgradeRecipe(ResourceLocation id, CraftingBookCategory category) {
+    public TierUpgradeRecipe(
+//? if >=1.21.1 {
+        /*CraftingBookCategory category) {
+        super(category);
+*///? } else {
+        ResourceLocation id, CraftingBookCategory category) {
         super(id, category);
+//? }
     }
 
     private static @Nullable BoatTier tierForIngot(Item ingot) {
@@ -51,15 +62,31 @@ public class TierUpgradeRecipe extends CustomRecipe {
         return wood == null ? null : wood.id();
     }
 
+    private static int inputSize(
+//? if >=1.21.1 {
+        /*CraftingInput input) {
+        return input.size();
+*///? } else {
+        CraftingContainer input) {
+        return input.getContainerSize();
+//? }
+    }
+
     @Override
-    public boolean matches(CraftingContainer inv, net.minecraft.world.level.Level world) {
+    public boolean matches(
+//? if >=1.21.1 {
+        /*CraftingInput inv,
+*///? } else {
+        CraftingContainer inv,
+//? }
+        net.minecraft.world.level.Level world) {
         ItemStack boatStack = null;
         Item ingotType = null;
         int boatCount = 0;
         int ingotCount = 0;
         int rejectReason = 0;
 
-        for (int i = 0; i < inv.getContainerSize(); i++) {
+        for (int i = 0; i < inputSize(inv); i++) {
             ItemStack stack = inv.getItem(i);
             if (stack.isEmpty()) continue;
             Item item = stack.getItem();
@@ -95,10 +122,20 @@ public class TierUpgradeRecipe extends CustomRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingContainer inv, RegistryAccess registries) {
+    public ItemStack assemble(
+//? if >=1.21.1 {
+        /*CraftingInput inv,
+*///? } else {
+        CraftingContainer inv,
+//? }
+//? if >=1.21.1 {
+        /*HolderLookup.Provider registries) {
+*///? } else {
+        RegistryAccess registries) {
+//? }
         ItemStack boatStack = null;
         Item ingotType = null;
-        for (int i = 0; i < inv.getContainerSize(); i++) {
+        for (int i = 0; i < inputSize(inv); i++) {
             ItemStack stack = inv.getItem(i);
             if (stack.isEmpty()) continue;
             if (isBoatInput(stack)) boatStack = stack;
@@ -116,7 +153,7 @@ public class TierUpgradeRecipe extends CustomRecipe {
         int extras = UpgradedBoatItem.readExtraSeats(boatStack);
         ItemStack out = new ItemStack(outItem);
         if (extras > 0) {
-            out.getOrCreateTag().putInt("ExtraSeats", extras);
+            UpgradedBoatItem.writeExtraSeats(out, extras);
         }
         return out;
     }

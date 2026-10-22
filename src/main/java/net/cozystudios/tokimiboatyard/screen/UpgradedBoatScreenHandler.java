@@ -14,9 +14,11 @@ public class UpgradedBoatScreenHandler extends AbstractContainerMenu {
     private final Container inventory;
     private final int rows;
 
+    //? if <1.21.1 {
     public UpgradedBoatScreenHandler(int syncId, Inventory playerInv, FriendlyByteBuf buf) {
         this(syncId, playerInv, buf.readByte() & 0xFF);
     }
+    //? }
 
     public UpgradedBoatScreenHandler(int syncId, Inventory playerInv, int rows) {
         this(syncId, playerInv, new SimpleContainer(rows * 9), rows);

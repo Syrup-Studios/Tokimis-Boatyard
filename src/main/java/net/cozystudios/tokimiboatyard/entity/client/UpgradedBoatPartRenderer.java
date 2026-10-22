@@ -9,6 +9,7 @@ import net.cozystudios.tokimiboatyard.data.BoatWoodRegistry;
 import net.cozystudios.tokimiboatyard.entity.BoatTier;
 import net.cozystudios.tokimiboatyard.entity.UpgradedBoatEntity;
 import net.cozystudios.tokimiboatyard.entity.UpgradedBoatPart;
+import net.cozystudios.tokimiboatyard.util.ModIds;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -22,7 +23,7 @@ import java.util.Map;
 
 public class UpgradedBoatPartRenderer extends EntityRenderer<UpgradedBoatPart> {
     private static final ResourceLocation FALLBACK_TEXTURE =
-        new ResourceLocation("minecraft", "textures/entity/chest_boat/oak.png");
+        ModIds.of("minecraft", "textures/entity/chest_boat/oak.png");
 
     private final Map<BoatTier, ResourceLocation> tierBlockTextures;
     private final UpgradedBoatModel boatModel;
@@ -39,7 +40,7 @@ public class UpgradedBoatPartRenderer extends EntityRenderer<UpgradedBoatPart> {
         this.raftBandModel = new UpgradedRaftBandModel(ctx.bakeLayer(ModModelLayers.UPGRADED_RAFT_BAND));
         ImmutableMap.Builder<BoatTier, ResourceLocation> tierBuilder = ImmutableMap.builder();
         for (BoatTier tier : BoatTier.values()) {
-            tierBuilder.put(tier, new ResourceLocation(tier.blockTexturePath()));
+            tierBuilder.put(tier, ModIds.parse(tier.blockTexturePath()));
         }
         this.tierBlockTextures = tierBuilder.build();
     }
@@ -120,12 +121,20 @@ public class UpgradedBoatPartRenderer extends EntityRenderer<UpgradedBoatPart> {
 
             VertexConsumer buffer = vertexConsumers.getBuffer(
                 RenderType.entityCutoutNoCull(getTextureLocation(part)));
+            //? if >=1.21 {
+            /*this.raftModel.renderToBuffer(matrices, buffer, light, OverlayTexture.NO_OVERLAY, -1);
+            *///?} else {
             this.raftModel.renderToBuffer(matrices, buffer, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+            //?}
 
             ResourceLocation bandTex = this.tierBlockTextures.get(boat.getTier());
             VertexConsumer bandBuffer = vertexConsumers.getBuffer(
                 RenderType.entityCutoutNoCull(bandTex));
+            //? if >=1.21 {
+            /*this.raftBandModel.render(matrices, bandBuffer, light, OverlayTexture.NO_OVERLAY, -1);
+            *///?} else {
             this.raftBandModel.render(matrices, bandBuffer, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+            //?}
         } else {
             this.boatModel.setVisible(false, isLast, true, true);
             this.boatModel.setPaddlesVisible(true, true);
@@ -138,12 +147,20 @@ public class UpgradedBoatPartRenderer extends EntityRenderer<UpgradedBoatPart> {
 
             VertexConsumer buffer = vertexConsumers.getBuffer(
                 RenderType.entityCutoutNoCull(getTextureLocation(part)));
+            //? if >=1.21 {
+            /*this.boatModel.renderToBuffer(matrices, buffer, light, OverlayTexture.NO_OVERLAY, -1);
+            *///?} else {
             this.boatModel.renderToBuffer(matrices, buffer, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+            //?}
 
             ResourceLocation bandTex = this.tierBlockTextures.get(boat.getTier());
             VertexConsumer bandBuffer = vertexConsumers.getBuffer(
                 RenderType.entityCutoutNoCull(bandTex));
+            //? if >=1.21 {
+            /*this.boatBandModel.render(matrices, bandBuffer, light, OverlayTexture.NO_OVERLAY, -1);
+            *///?} else {
             this.boatBandModel.render(matrices, bandBuffer, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+            //?}
 
             if (!boat.isUnderWater()) {
                 VertexConsumer waterBuffer = vertexConsumers.getBuffer(RenderType.waterMask());

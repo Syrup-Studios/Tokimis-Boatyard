@@ -1,5 +1,6 @@
 package net.cozystudios.tokimiboatyard.compat;
 
+import net.cozystudios.tokimiboatyard.util.ModIds;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.cozystudios.tokimiboatyard.TokimiBoatyard;
@@ -82,9 +83,9 @@ public final class ModdedBoatCompat {
         boolean isRaft = type == Boat.Type.BAMBOO;
         String iconSuffix = isRaft ? "_chest_raft" : "_chest_boat";
         BoatWoodRegistry.register(new BoatWood(
-            new ResourceLocation("minecraft", name),
-            new ResourceLocation("minecraft", "textures/entity/chest_boat/" + name + ".png"),
-            new ResourceLocation("minecraft", "item/" + name + iconSuffix),
+            ModIds.of("minecraft", name),
+            ModIds.of("minecraft", "textures/entity/chest_boat/" + name + ".png"),
+            ModIds.of("minecraft", "item/" + name + iconSuffix),
             type,
             displayName,
             isRaft,
@@ -105,20 +106,20 @@ public final class ModdedBoatCompat {
                 path = rawName.substring(nsCandidate.length() + 1);
             }
 
-            ResourceLocation id = new ResourceLocation(namespace, path);
-            Item baseItem = BuiltInRegistries.ITEM.get(new ResourceLocation(namespace, path + "_chest_boat"));
+            ResourceLocation id = ModIds.of(namespace, path);
+            Item baseItem = BuiltInRegistries.ITEM.get(ModIds.of(namespace, path + "_chest_boat"));
             if (baseItem == Items.AIR) baseItem = null;
 
             ResourceLocation fallbackIcon = baseItem != null
-                ? new ResourceLocation(namespace, "item/" + path + "_chest_boat")
-                : new ResourceLocation("minecraft", "item/oak_chest_boat");
+                ? ModIds.of(namespace, "item/" + path + "_chest_boat")
+                : ModIds.of("minecraft", "item/oak_chest_boat");
             ResourceLocation itemIcon = baseItem != null
                 ? resolveLayer0(namespace, path, fallbackIcon)
                 : fallbackIcon;
 
             BoatWoodRegistry.register(new BoatWood(
                 id,
-                new ResourceLocation("minecraft", "textures/entity/chest_boat/" + rawName + ".png"),
+                ModIds.of("minecraft", "textures/entity/chest_boat/" + rawName + ".png"),
                 itemIcon,
                 type,
                 prettify(path),
@@ -145,7 +146,7 @@ public final class ModdedBoatCompat {
             if (!path.endsWith("_chest_boat")) continue;
 
             String wood = path.substring(0, path.length() - "_chest_boat".length());
-            ResourceLocation woodId = new ResourceLocation(itemId.getNamespace(), wood);
+            ResourceLocation woodId = ModIds.of(itemId.getNamespace(), wood);
             if (BoatWoodRegistry.has(woodId)) continue;
 
             Item baseItem = BuiltInRegistries.ITEM.get(itemId);
@@ -153,12 +154,12 @@ public final class ModdedBoatCompat {
 
             Boat.Type matchedType = findEnumTypeByName(itemId.getNamespace() + "_" + wood);
 
-            ResourceLocation fallbackIcon = new ResourceLocation(itemId.getNamespace(), "item/" + wood + "_chest_boat");
+            ResourceLocation fallbackIcon = ModIds.of(itemId.getNamespace(), "item/" + wood + "_chest_boat");
             ResourceLocation itemIcon = resolveLayer0(itemId.getNamespace(), wood, fallbackIcon);
 
             BoatWoodRegistry.register(new BoatWood(
                 woodId,
-                new ResourceLocation(itemId.getNamespace(), "textures/entity/chest_boat/" + wood + ".png"),
+                ModIds.of(itemId.getNamespace(), "textures/entity/chest_boat/" + wood + ".png"),
                 itemIcon,
                 matchedType,
                 prettify(wood),

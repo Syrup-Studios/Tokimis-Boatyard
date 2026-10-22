@@ -5,10 +5,11 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.cozystudios.tokimiboatyard.util.ModIds;
 
 public class UpgradedBoatScreen extends AbstractContainerScreen<UpgradedBoatScreenHandler> {
     private static final ResourceLocation TEXTURE =
-        new ResourceLocation("textures/gui/container/generic_54.png");
+        ModIds.parse("textures/gui/container/generic_54.png");
 
     private static final int TOP_BORDER_H = 17;
     private static final int SLOT_ROW_H   = 18;
@@ -44,7 +45,9 @@ public class UpgradedBoatScreen extends AbstractContainerScreen<UpgradedBoatScre
 
     @Override
     public void render(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+        //? if <1.21.1 {
         this.renderBackground(ctx);
+        //? }
         super.render(ctx, mouseX, mouseY, delta);
         this.renderTooltip(ctx, mouseX, mouseY);
     }

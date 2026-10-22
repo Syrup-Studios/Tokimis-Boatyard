@@ -2,13 +2,20 @@ package net.cozystudios.tokimiboatyard.entity;
 
 import net.cozystudios.tokimiboatyard.registry.ModEntities;
 import net.cozystudios.tokimiboatyard.registry.ModItems;
+import net.cozystudios.tokimiboatyard.item.UpgradedBoatItem;
+import net.cozystudios.tokimiboatyard.util.ModIds;
 import net.cozystudios.tokimiboatyard.screen.UpgradedBoatScreenHandler;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+//? if >=1.21.1 {
+/*import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.storage.loot.LootTable;
+*///? } else {
 import net.minecraft.network.FriendlyByteBuf;
+//? }
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -65,7 +72,7 @@ public class UpgradedBoatEntity extends Boat implements HasCustomInventoryScreen
     private static final EntityDataAccessor<String> WOOD_ID =
         SynchedEntityData.defineId(UpgradedBoatEntity.class, EntityDataSerializers.STRING);
 
-    public static final ResourceLocation DEFAULT_WOOD_ID = new ResourceLocation("minecraft", "oak");
+    public static final ResourceLocation DEFAULT_WOOD_ID = ModIds.of("minecraft", "oak");
 
     public static final float SEGMENT_SPACING = 1.75F;
 
@@ -74,7 +81,11 @@ public class UpgradedBoatEntity extends Boat implements HasCustomInventoryScreen
     private NonNullList<ItemStack> inventory =
         NonNullList.withSize(BoatTier.COPPER.slots(), ItemStack.EMPTY);
 
+    //? if >=1.21.1 {
+    /*private @Nullable ResourceKey<LootTable> lootTableId;
+    *///? } else {
     private @Nullable ResourceLocation lootTableId;
+    //? }
     private long lootTableSeed;
 
     private int pendingSeat = -1;
@@ -100,6 +111,16 @@ public class UpgradedBoatEntity extends Boat implements HasCustomInventoryScreen
         this.zo = z;
     }
 
+    //? if >=1.21.1 {
+    /*@Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(TIER, BoatTier.COPPER.ordinal());
+        builder.define(EXTRA_SEATS, 0);
+        builder.define(SEATS, new CompoundTag());
+        builder.define(WOOD_ID, DEFAULT_WOOD_ID.toString());
+    }
+    *///? } else {
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
@@ -108,6 +129,7 @@ public class UpgradedBoatEntity extends Boat implements HasCustomInventoryScreen
         this.entityData.define(SEATS, new CompoundTag());
         this.entityData.define(WOOD_ID, DEFAULT_WOOD_ID.toString());
     }
+    //? }
 
     public ResourceLocation getWoodId() {
         String s = this.entityData.get(WOOD_ID);
@@ -414,7 +436,13 @@ public class UpgradedBoatEntity extends Boat implements HasCustomInventoryScreen
         float zInSeg = seatInSeg == 0 ? 0.2f : -0.6f;
         float localZ = -segment * SEGMENT_SPACING + zInSeg;
 
-        Vec3 local = new Vec3(0.0, this.getPassengersRidingOffset() + passenger.getMyRidingOffset(), localZ)
+        //? if >=1.21.1 {
+        /*double ridingOffset = this.getPassengerRidingPosition(passenger).y - this.getY()
+            - passenger.getVehicleAttachmentPoint(this).y;
+        *///? } else {
+        double ridingOffset = this.getPassengersRidingOffset() + passenger.getMyRidingOffset();
+        //? }
+        Vec3 local = new Vec3(0.0, ridingOffset, localZ)
             .yRot(-this.getYRot() * ((float) Math.PI / 180f));
         updater.accept(passenger,
             this.getX() + local.x,
@@ -592,10 +620,17 @@ public class UpgradedBoatEntity extends Boat implements HasCustomInventoryScreen
         this.inventory = NonNullList.withSize(getTier().slots(), ItemStack.EMPTY);
     }
 
+    //? if >=1.21.1 {
+    /*@Override
+    public @Nullable ResourceKey<LootTable> getLootTable() { return this.lootTableId; }
+    @Override
+    public void setLootTable(@Nullable ResourceKey<LootTable> id) { this.lootTableId = id; }
+    *///? } else {
     @Override
     public @Nullable ResourceLocation getLootTable() { return this.lootTableId; }
     @Override
     public void setLootTable(@Nullable ResourceLocation id) { this.lootTableId = id; }
+    //? }
     @Override
     public long getLootTableSeed() { return this.lootTableSeed; }
     @Override
@@ -825,7 +860,7 @@ public class UpgradedBoatEntity extends Boat implements HasCustomInventoryScreen
         ItemStack stack = new ItemStack(this.getDropItem());
         int extras = getExtraSeats();
         if (extras > 0) {
-            stack.getOrCreateTag().putInt("ExtraSeats", extras);
+            UpgradedBoatItem.writeExtraSeats(stack, extras);
         }
         return stack;
     }
@@ -846,7 +881,11 @@ public class UpgradedBoatEntity extends Boat implements HasCustomInventoryScreen
         nbt.putInt("ExtraSeats", getExtraSeats());
         nbt.put("Seats", seatsNbt().copy());
         nbt.putString("WoodId", getWoodId().toString());
+        //? if >=1.21.1 {
+        /*this.addChestVehicleSaveData(nbt, this.registryAccess());
+        *///? } else {
         this.addChestVehicleSaveData(nbt);
+        //? }
     }
 
     @Override
@@ -868,7 +907,11 @@ public class UpgradedBoatEntity extends Boat implements HasCustomInventoryScreen
             ResourceLocation id = ResourceLocation.tryParse(nbt.getString("WoodId"));
             if (id != null) setWoodId(id);
         }
+        //? if >=1.21.1 {
+        /*this.readChestVehicleSaveData(nbt, this.registryAccess());
+        *///? } else {
         this.readChestVehicleSaveData(nbt);
+        //? }
     }
 
 
@@ -885,8 +928,15 @@ public class UpgradedBoatEntity extends Boat implements HasCustomInventoryScreen
         return new UpgradedBoatScreenHandler(syncId, inv, this, getTier().rows());
     }
 
+    //? if >=1.21.1 {
+    /*@Override
+    public Integer getScreenOpeningData(ServerPlayer player) {
+        return getTier().rows();
+    }
+    *///? } else {
     @Override
     public void writeScreenOpeningData(ServerPlayer player, FriendlyByteBuf buf) {
         buf.writeByte(getTier().rows());
     }
+    //? }
 }
