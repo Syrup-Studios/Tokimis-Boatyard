@@ -7,21 +7,21 @@ import net.cozystudios.tokimiboatyard.entity.BoatTier;
 import net.cozystudios.tokimiboatyard.item.UpgradedBoatItem;
 import net.cozystudios.tokimiboatyard.registry.ModItems;
 import net.cozystudios.tokimiboatyard.registry.ModRecipes;
-import net.minecraft.inventory.RecipeInputInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.SpecialCraftingRecipe;
-import net.minecraft.recipe.book.CraftingRecipeCategory;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import org.jetbrains.annotations.Nullable;
 
-public class TierUpgradeRecipe extends SpecialCraftingRecipe {
+public class TierUpgradeRecipe extends CustomRecipe {
 
-    public TierUpgradeRecipe(Identifier id, CraftingRecipeCategory category) {
+    public TierUpgradeRecipe(ResourceLocation id, CraftingBookCategory category) {
         super(id, category);
     }
 
@@ -44,7 +44,7 @@ public class TierUpgradeRecipe extends SpecialCraftingRecipe {
         return stack.getItem() instanceof UpgradedBoatItem ubi ? ubi.getTier() : null;
     }
 
-    private static @Nullable Identifier getWoodId(ItemStack stack) {
+    private static @Nullable ResourceLocation getWoodId(ItemStack stack) {
         Item item = stack.getItem();
         if (item instanceof UpgradedBoatItem ubi) return ubi.getWoodId();
         BoatWood wood = BoatWoodRegistry.getByBaseItem(item);
@@ -52,15 +52,15 @@ public class TierUpgradeRecipe extends SpecialCraftingRecipe {
     }
 
     @Override
-    public boolean matches(RecipeInputInventory inv, net.minecraft.world.World world) {
+    public boolean matches(CraftingContainer inv, net.minecraft.world.level.Level world) {
         ItemStack boatStack = null;
         Item ingotType = null;
         int boatCount = 0;
         int ingotCount = 0;
         int rejectReason = 0;
 
-        for (int i = 0; i < inv.size(); i++) {
-            ItemStack stack = inv.getStack(i);
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack stack = inv.getItem(i);
             if (stack.isEmpty()) continue;
             Item item = stack.getItem();
             if (isBoatInput(stack)) {
@@ -72,7 +72,7 @@ public class TierUpgradeRecipe extends SpecialCraftingRecipe {
                 else if (ingotType != item) { rejectReason = 2; break; }
                 ingotCount++;
             } else {
-                TokimiBoatyard.LOGGER.debug("[TierUpgrade] reject: slot {} has non-boat non-ingot item {}", i, Registries.ITEM.getId(item));
+                TokimiBoatyard.LOGGER.debug("[TierUpgrade] reject: slot {} has non-boat non-ingot item {}", i, BuiltInRegistries.ITEM.getKey(item));
                 return false;
             }
         }
@@ -90,16 +90,16 @@ public class TierUpgradeRecipe extends SpecialCraftingRecipe {
         int currentOrd = current == null ? -1 : current.ordinal();
         boolean ok = target.ordinal() == currentOrd + 1;
         TokimiBoatyard.LOGGER.debug("[TierUpgrade] boat={} currentTier={} target={} ok={}",
-            Registries.ITEM.getId(boatStack.getItem()), current, target, ok);
+            BuiltInRegistries.ITEM.getKey(boatStack.getItem()), current, target, ok);
         return ok;
     }
 
     @Override
-    public ItemStack craft(RecipeInputInventory inv, DynamicRegistryManager registries) {
+    public ItemStack assemble(CraftingContainer inv, RegistryAccess registries) {
         ItemStack boatStack = null;
         Item ingotType = null;
-        for (int i = 0; i < inv.size(); i++) {
-            ItemStack stack = inv.getStack(i);
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack stack = inv.getItem(i);
             if (stack.isEmpty()) continue;
             if (isBoatInput(stack)) boatStack = stack;
             else if (tierForIngot(stack.getItem()) != null) ingotType = stack.getItem();
@@ -107,7 +107,7 @@ public class TierUpgradeRecipe extends SpecialCraftingRecipe {
         if (boatStack == null || ingotType == null) return ItemStack.EMPTY;
 
         BoatTier target = tierForIngot(ingotType);
-        Identifier woodId = getWoodId(boatStack);
+        ResourceLocation woodId = getWoodId(boatStack);
         if (target == null || woodId == null) return ItemStack.EMPTY;
 
         UpgradedBoatItem outItem = ModItems.get(target, woodId);
@@ -116,13 +116,13 @@ public class TierUpgradeRecipe extends SpecialCraftingRecipe {
         int extras = UpgradedBoatItem.readExtraSeats(boatStack);
         ItemStack out = new ItemStack(outItem);
         if (extras > 0) {
-            out.getOrCreateNbt().putInt("ExtraSeats", extras);
+            out.getOrCreateTag().putInt("ExtraSeats", extras);
         }
         return out;
     }
 
     @Override
-    public boolean fits(int width, int height) {
+    public boolean canCraftInDimensions(int width, int height) {
         return width * height >= 9;
     }
 

@@ -11,23 +11,23 @@ import net.cozystudios.tokimiboatyard.screen.UpgradedBoatScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.minecraft.client.gui.screen.ingame.HandledScreens;
-import net.minecraft.client.render.entity.model.ChestBoatEntityModel;
-import net.minecraft.client.render.entity.model.ChestRaftEntityModel;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.model.ChestBoatModel;
+import net.minecraft.client.model.ChestRaftModel;
 
 public class TokimiBoatyardClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         EntityModelLayerRegistry.registerModelLayer(
-            ModModelLayers.UPGRADED_BOAT_CHUNK, ChestBoatEntityModel::getTexturedModelData);
+            ModModelLayers.UPGRADED_BOAT_CHUNK, ChestBoatModel::createBodyModel);
         EntityModelLayerRegistry.registerModelLayer(
             ModModelLayers.UPGRADED_BOAT_BAND, UpgradedBoatBandModel::getTexturedModelData);
         EntityModelLayerRegistry.registerModelLayer(
-            ModModelLayers.UPGRADED_RAFT_CHUNK, ChestRaftEntityModel::getTexturedModelData);
+            ModModelLayers.UPGRADED_RAFT_CHUNK, ChestRaftModel::createBodyModel);
         EntityModelLayerRegistry.registerModelLayer(
             ModModelLayers.UPGRADED_RAFT_BAND, UpgradedRaftBandModel::getTexturedModelData);
         EntityRendererRegistry.register(ModEntities.UPGRADED_BOAT, UpgradedBoatRenderer::new);
         EntityRendererRegistry.register(ModEntities.UPGRADED_BOAT_PART, UpgradedBoatPartRenderer::new);
-        HandledScreens.register(ModScreens.UPGRADED_BOAT, UpgradedBoatScreen::new);
+        MenuScreens.register(ModScreens.UPGRADED_BOAT, UpgradedBoatScreen::new);
     }
 }

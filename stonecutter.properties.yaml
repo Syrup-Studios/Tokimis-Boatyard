@@ -12,7 +12,6 @@ targets:
 "1.20.1":
   java:
     version: 17
-  yarn_mappings: 1.20.1+build.10
   loader_version: 0.17.2
   fabric_version: 0.92.6+1.20.1
   jei_version: 15.21.0.148

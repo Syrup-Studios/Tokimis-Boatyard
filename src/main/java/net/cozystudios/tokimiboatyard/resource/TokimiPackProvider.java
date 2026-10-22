@@ -1,24 +1,23 @@
 package net.cozystudios.tokimiboatyard.resource;
 
-import net.minecraft.resource.ResourcePackProfile;
-import net.minecraft.resource.ResourcePackProvider;
-import net.minecraft.resource.ResourcePackSource;
-import net.minecraft.resource.ResourceType;
-import net.minecraft.text.Text;
-
 import java.util.function.Consumer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.repository.Pack;
+import net.minecraft.server.packs.repository.PackSource;
+import net.minecraft.server.packs.repository.RepositorySource;
 
-public class TokimiPackProvider implements ResourcePackProvider {
+public class TokimiPackProvider implements RepositorySource {
     @Override
-    public void register(Consumer<ResourcePackProfile> adder) {
-        ResourcePackProfile profile = ResourcePackProfile.create(
+    public void loadPacks(Consumer<Pack> adder) {
+        Pack profile = Pack.readMetaAndCreate(
             DynamicResourcePack.NAME,
-            Text.literal("Tokimi's Boatyard Dynamic"),
+            Component.literal("Tokimi's Boatyard Dynamic"),
             true,
             name -> new DynamicResourcePack(),
-            ResourceType.CLIENT_RESOURCES,
-            ResourcePackProfile.InsertionPosition.BOTTOM,
-            ResourcePackSource.BUILTIN
+            PackType.CLIENT_RESOURCES,
+            Pack.Position.BOTTOM,
+            PackSource.BUILT_IN
         );
         if (profile != null) adder.accept(profile);
     }

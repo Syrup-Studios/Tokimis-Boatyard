@@ -6,13 +6,13 @@ import net.cozystudios.tokimiboatyard.TokimiBoatyard;
 import net.cozystudios.tokimiboatyard.data.BoatWood;
 import net.cozystudios.tokimiboatyard.data.BoatWoodRegistry;
 import net.cozystudios.tokimiboatyard.entity.BoatTier;
-import net.minecraft.resource.InputSupplier;
-import net.minecraft.resource.ResourcePack;
-import net.minecraft.resource.ResourceType;
-import net.minecraft.resource.metadata.PackResourceMetadata;
-import net.minecraft.resource.metadata.ResourceMetadataReader;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
+import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
+import net.minecraft.server.packs.resources.IoSupplier;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
@@ -23,17 +23,17 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class DynamicResourcePack implements ResourcePack {
+public class DynamicResourcePack implements PackResources {
     public static final String NAME = "tokimiboatyard_dynamic";
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private static final String ITEM_MODEL_PREFIX = "models/item/";
     private static final String LANG_PATH = "lang/en_us.json";
 
-    private volatile @Nullable Map<Identifier, byte[]> cache;
+    private volatile @Nullable Map<ResourceLocation, byte[]> cache;
 
-    private Map<Identifier, byte[]> cache() {
-        Map<Identifier, byte[]> local = cache;
+    private Map<ResourceLocation, byte[]> cache() {
+        Map<ResourceLocation, byte[]> local = cache;
         if (local != null) return local;
         synchronized (this) {
             if (cache != null) return cache;
@@ -46,8 +46,8 @@ public class DynamicResourcePack implements ResourcePack {
         cache = null;
     }
 
-    private Map<Identifier, byte[]> buildAll() {
-        Map<Identifier, byte[]> files = new HashMap<>();
+    private Map<ResourceLocation, byte[]> buildAll() {
+        Map<ResourceLocation, byte[]> files = new HashMap<>();
         Map<String, String> langEntries = new LinkedHashMap<>();
 
         for (BoatTier tier : BoatTier.values()) {
@@ -61,7 +61,7 @@ public class DynamicResourcePack implements ResourcePack {
                 );
 
                 if (!wood.isRaft()) {
-                    Identifier modelId = new Identifier(TokimiBoatyard.MOD_ID, ITEM_MODEL_PREFIX + itemPath + ".json");
+                    ResourceLocation modelId = new ResourceLocation(TokimiBoatyard.MOD_ID, ITEM_MODEL_PREFIX + itemPath + ".json");
                     byte[] modelBytes = buildItemModel(wood.itemIconLayer(), tier, wood.overlayShape()).getBytes(StandardCharsets.UTF_8);
                     files.put(modelId, modelBytes);
                 }
@@ -69,11 +69,11 @@ public class DynamicResourcePack implements ResourcePack {
         }
 
         byte[] langBytes = GSON.toJson(langEntries).getBytes(StandardCharsets.UTF_8);
-        files.put(new Identifier(TokimiBoatyard.MOD_ID, LANG_PATH), langBytes);
+        files.put(new ResourceLocation(TokimiBoatyard.MOD_ID, LANG_PATH), langBytes);
         return files;
     }
 
-    private String buildItemModel(Identifier layer0, BoatTier tier, String shape) {
+    private String buildItemModel(ResourceLocation layer0, BoatTier tier, String shape) {
         Map<String, Object> model = new LinkedHashMap<>();
         model.put("parent", "item/generated");
         Map<String, String> textures = new LinkedHashMap<>();
@@ -87,7 +87,7 @@ public class DynamicResourcePack implements ResourcePack {
     }
 
     @Override
-    public @Nullable InputSupplier<InputStream> openRoot(String... segments) {
+    public @Nullable IoSupplier<InputStream> getRootResource(String... segments) {
         if (segments.length == 1 && segments[0].equals("pack.mcmeta")) {
             String json = "{\"pack\":{\"pack_format\":15,\"description\":\"Tokimi's Boatyard dynamic resources\"}}";
             return () -> new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
@@ -96,19 +96,19 @@ public class DynamicResourcePack implements ResourcePack {
     }
 
     @Override
-    public @Nullable InputSupplier<InputStream> open(ResourceType type, Identifier id) {
-        if (type != ResourceType.CLIENT_RESOURCES) return null;
+    public @Nullable IoSupplier<InputStream> getResource(PackType type, ResourceLocation id) {
+        if (type != PackType.CLIENT_RESOURCES) return null;
         byte[] data = cache().get(id);
         if (data == null) return null;
         return () -> new ByteArrayInputStream(data);
     }
 
     @Override
-    public void findResources(ResourceType type, String namespace, String prefix, ResultConsumer consumer) {
-        if (type != ResourceType.CLIENT_RESOURCES) return;
+    public void listResources(PackType type, String namespace, String prefix, ResourceOutput consumer) {
+        if (type != PackType.CLIENT_RESOURCES) return;
         if (!TokimiBoatyard.MOD_ID.equals(namespace)) return;
-        for (Map.Entry<Identifier, byte[]> entry : cache().entrySet()) {
-            Identifier id = entry.getKey();
+        for (Map.Entry<ResourceLocation, byte[]> entry : cache().entrySet()) {
+            ResourceLocation id = entry.getKey();
             if (!TokimiBoatyard.MOD_ID.equals(id.getNamespace())) continue;
             if (!id.getPath().startsWith(prefix)) continue;
             byte[] data = entry.getValue();
@@ -117,22 +117,22 @@ public class DynamicResourcePack implements ResourcePack {
     }
 
     @Override
-    public Set<String> getNamespaces(ResourceType type) {
-        return type == ResourceType.CLIENT_RESOURCES ? Set.of(TokimiBoatyard.MOD_ID) : Set.of();
+    public Set<String> getNamespaces(PackType type) {
+        return type == PackType.CLIENT_RESOURCES ? Set.of(TokimiBoatyard.MOD_ID) : Set.of();
     }
 
     @Override
-    public @Nullable <T> T parseMetadata(ResourceMetadataReader<T> metaReader) {
-        if (metaReader.getKey().equals("pack")) {
+    public @Nullable <T> T getMetadataSection(MetadataSectionSerializer<T> metaReader) {
+        if (metaReader.getMetadataSectionName().equals("pack")) {
             @SuppressWarnings("unchecked")
-            T meta = (T) new PackResourceMetadata(Text.literal("Tokimi's Boatyard dynamic"), 15);
+            T meta = (T) new PackMetadataSection(Component.literal("Tokimi's Boatyard dynamic"), 15);
             return meta;
         }
         return null;
     }
 
     @Override
-    public String getName() {
+    public String packId() {
         return NAME;
     }
 

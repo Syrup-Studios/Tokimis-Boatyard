@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
     minecraft("com.mojang:minecraft:$minecraftVersion")
-    mappings("net.fabricmc:yarn:${project.property("yarn_mappings")}:v2")
+    loomx.applyMojangMappings()
     modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
     modCompileOnly("mezz.jei:jei-1.20.1-common-api-intermediary:${project.property("jei_version")}") {
