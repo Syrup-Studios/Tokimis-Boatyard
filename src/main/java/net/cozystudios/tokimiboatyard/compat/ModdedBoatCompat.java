@@ -6,8 +6,12 @@ import com.google.gson.JsonParser;
 import net.cozystudios.tokimiboatyard.TokimiBoatyard;
 import net.cozystudios.tokimiboatyard.data.BoatWood;
 import net.cozystudios.tokimiboatyard.data.BoatWoodRegistry;
+//? if fabric {
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+//?} else if neoforge {
+/*import net.neoforged.fml.ModList;
+*///?}
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.vehicle.Boat;
@@ -47,10 +51,17 @@ public final class ModdedBoatCompat {
     }
 
     private static ResourceLocation resolveLayer0(String modid, String wood, ResourceLocation fallback) {
+        //? if fabric {
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modid);
         if (modOpt.isEmpty()) return fallback;
         Optional<Path> pathOpt = modOpt.get().findPath("assets/" + modid + "/models/item/" + wood + "_chest_boat.json");
         if (pathOpt.isEmpty()) return fallback;
+        //?} else if neoforge {
+        /*Optional<Path> pathOpt = ModList.get().getModContainerById(modid)
+            .map(container -> container.getModInfo().getOwningFile().getFile()
+                .findResource("assets/" + modid + "/models/item/" + wood + "_chest_boat.json"));
+        if (pathOpt.isEmpty()) return fallback;
+        *///?}
         try {
             String content = Files.readString(pathOpt.get());
             JsonObject json = JsonParser.parseString(content).getAsJsonObject();

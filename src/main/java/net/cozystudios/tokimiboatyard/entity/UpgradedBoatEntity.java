@@ -5,7 +5,13 @@ import net.cozystudios.tokimiboatyard.registry.ModItems;
 import net.cozystudios.tokimiboatyard.item.UpgradedBoatItem;
 import net.cozystudios.tokimiboatyard.util.ModIds;
 import net.cozystudios.tokimiboatyard.screen.UpgradedBoatScreenHandler;
+//? if fabric
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+//? if neoforge {
+/*import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.neoforged.neoforge.client.extensions.IMenuProviderExtension;
+import net.neoforged.neoforge.common.NeoForgeMod;
+*///?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -59,7 +65,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-public class UpgradedBoatEntity extends Boat implements HasCustomInventoryScreen, ContainerEntity, ExtendedScreenHandlerFactory {
+public class UpgradedBoatEntity extends Boat implements HasCustomInventoryScreen, ContainerEntity,
+    //? if fabric
+    ExtendedScreenHandlerFactory
+    //? if neoforge
+    /*IMenuProviderExtension*/
+{
     private static final EntityDataAccessor<Integer> TIER =
         SynchedEntityData.defineId(UpgradedBoatEntity.class, EntityDataSerializers.INT);
 
@@ -365,7 +376,11 @@ public class UpgradedBoatEntity extends Boat implements HasCustomInventoryScreen
         if (passenger instanceof UpgradedBoatPart) return true;
         long regulars = this.getPassengers().stream()
             .filter(e -> !(e instanceof UpgradedBoatPart)).count();
+        //? if fabric {
         return regulars < getTotalSeats() && !this.isEyeInFluid(FluidTags.WATER);
+        //?} else if neoforge {
+        /*return regulars < getTotalSeats() && this.getEyeInFluidType() != NeoForgeMod.WATER_TYPE.value();
+        *///?}
     }
 
     @Override
@@ -928,15 +943,21 @@ public class UpgradedBoatEntity extends Boat implements HasCustomInventoryScreen
         return new UpgradedBoatScreenHandler(syncId, inv, this, getTier().rows());
     }
 
-    //? if >=1.21.1 {
+    //? if fabric && >=1.21.1 {
     /*@Override
     public Integer getScreenOpeningData(ServerPlayer player) {
         return getTier().rows();
     }
-    *///? } else {
+    *///?} else if fabric {
     @Override
     public void writeScreenOpeningData(ServerPlayer player, FriendlyByteBuf buf) {
         buf.writeByte(getTier().rows());
     }
-    //? }
+    //?}
+    //? if neoforge {
+    /*@Override
+    public void writeClientSideData(AbstractContainerMenu menu, RegistryFriendlyByteBuf buf) {
+        buf.writeVarInt(getTier().rows());
+    }
+    *///?}
 }

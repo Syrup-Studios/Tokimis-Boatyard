@@ -6,6 +6,7 @@ import net.cozystudios.tokimiboatyard.data.BoatWood;
 import net.cozystudios.tokimiboatyard.data.BoatWoodRegistry;
 import net.cozystudios.tokimiboatyard.entity.BoatTier;
 import net.cozystudios.tokimiboatyard.item.UpgradedBoatItem;
+//? if fabric
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -32,6 +33,7 @@ public final class ModItems {
             }
             BOATS.put(tier, byWood);
         }
+        //? if fabric {
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.TOOLS_AND_UTILITIES).register(entries -> {
             for (BoatTier tier : BoatTier.values()) {
                 Map<ResourceLocation, UpgradedBoatItem> byWood = BOATS.get(tier);
@@ -41,11 +43,17 @@ public final class ModItems {
                 }
             }
         });
+        //?}
     }
 
     public static UpgradedBoatItem get(BoatTier tier, ResourceLocation woodId) {
         Map<ResourceLocation, UpgradedBoatItem> byWood = BOATS.get(tier);
         return byWood == null ? null : byWood.get(woodId);
+    }
+
+    public static java.util.Collection<UpgradedBoatItem> getAll(BoatTier tier) {
+        Map<ResourceLocation, UpgradedBoatItem> byWood = BOATS.get(tier);
+        return byWood == null ? java.util.List.of() : byWood.values();
     }
 
     public static String itemId(BoatTier tier, BoatWood wood) {

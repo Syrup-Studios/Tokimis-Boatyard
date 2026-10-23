@@ -3,7 +3,11 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
         maven("https://maven.kikugie.dev/releases")
+        maven("https://maven.neoforged.net/releases/")
         maven("https://maven.fabricmc.net/")
+    }
+    plugins {
+        id("net.neoforged.moddev") version "2.0.147"
     }
 }
 
@@ -23,7 +27,7 @@ stonecutter {
             val minecraft = values.getValue("minecraft").asPrimitive().content.toString()
             values.getValue("loaders").asList().forEach { loaderValue ->
                 val loader = loaderValue.asPrimitive().content.toString()
-                require(loader == "fabric") { "Unsupported loader '$loader' for Minecraft $minecraft" }
+                require(loader in setOf("fabric", "neoforge")) { "Unsupported loader '$loader' for Minecraft $minecraft" }
                 val projectName = "$minecraft-$loader"
                 require(projects.add(projectName)) { "Duplicate target '$projectName'" }
                 version(projectName, minecraft).buildscript("build.$loader.gradle.kts")

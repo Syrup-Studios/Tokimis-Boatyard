@@ -2,6 +2,7 @@ import dev.kikugie.stonecutter.build.StonecutterBuildExtension
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.file.RelativePath
+import groovy.json.JsonGenerator
 
 plugins {
     id("dev.kikugie.loom-back-compat")
@@ -13,6 +14,14 @@ val minecraftVersion = target.current.version
 val javaVersion = project.property("java.version").toString().toInt()
 val jeiVersion = project.property("jei_version").toString()
 val modVersion = "${project.property("mod.version")}+$minecraftVersion-fabric"
+val jsonGenerator = JsonGenerator.Options().disableUnicodeEscaping().build()
+val escaped = { value: String -> jsonGenerator.toJson(value).toString().removeSurrounding("\"") }
+val modId = project.property("mod.id").toString()
+val modName = escaped(project.property("mod.name").toString())
+val authors = target.properties.raw("mod", "authors").asList().map { it.asPrimitive().content.toString() }
+val authorsJson = jsonGenerator.toJson(authors)
+val escapedDescription = escaped(project.property("mod.description").toString())
+val escapedLicense = escaped(project.property("mod.license").toString())
 
 group = project.property("mod.group") as String
 version = modVersion
@@ -35,14 +44,24 @@ dependencies {
 }
 
 tasks.processResources {
-    inputs.properties(mapOf("version" to project.version, "minecraftVersion" to minecraftVersion, "javaVersion" to javaVersion))
+    inputs.properties(mapOf("version" to project.version, "minecraftVersion" to minecraftVersion, "javaVersion" to javaVersion, "description" to escapedDescription, "modId" to project.property("mod.id"), "modName" to escaped(project.property("mod.name").toString()), "authors" to authorsJson, "license" to escapedLicense))
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude("META-INF/neoforge.mods.toml")
+    exclude("tokimiboatyard.neoforge.mixins.json")
     filesMatching("fabric.mod.json") {
         expand(
-            "version" to project.version,
+            "version" to modVersion,
             "minecraft_version" to "~$minecraftVersion",
             "java_version" to ">=$javaVersion",
-            "java_level" to javaVersion
+            "java_level" to javaVersion,
+            "description" to escapedDescription,
+            "modId" to modId,
+            "modName" to modName,
+            "license" to escapedLicense
+        )
+        filter(
+            mapOf("tokens" to mapOf("authors" to authorsJson), "beginToken" to "[\"@", "endToken" to "@\"]"),
+            org.apache.tools.ant.filters.ReplaceTokens::class.java
         )
     }
     filesMatching("tokimiboatyard.mixins.json") {
@@ -67,6 +86,8 @@ tasks.withType<JavaCompile>().configureEach {
 
 tasks.withType<Jar>().configureEach {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude("META-INF/neoforge.mods.toml")
+    exclude("tokimiboatyard.neoforge.mixins.json")
 }
 
 tasks.jar {
